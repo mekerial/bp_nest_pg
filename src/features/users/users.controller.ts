@@ -34,5 +34,4 @@ export class UsersController {
   remove(@Param('id') id: string): Promise<void> {
     return this.usersService.remove(id);
   }
-
 }
