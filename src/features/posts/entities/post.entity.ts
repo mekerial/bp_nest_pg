@@ -1,25 +1,22 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class User {
+export class Post {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  login: string;
+  title: string;
 
   @Column()
-  email: string;
+  shortDescription: string;
+
+  @Column()
+  content: string;
+
+  @Column()
+  blogId: number;
 
   @Column()
   createdAt: Date;
-
-  @Column()
-  passwordHash: string;
-
-  @Column()
-  passwordSalt: string;
-
-  @Column({ default: false })
-  isConfirmed: boolean;
 }
