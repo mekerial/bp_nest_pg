@@ -6,14 +6,22 @@ import {
   Param,
   Post,
   ParseIntPipe,
+  Query,
+  BadRequestException,
+  NotFoundException,
 } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { User } from "./user.entity";
 import { UsersService } from "./users.service";
+import { QueryInputUserDto } from "./dto/query-input-blog.dto";
+import { UsersQueryRepo } from "./repositories/users.queryRepo";
 
 @Controller("sa/users")
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly usersQueryRepo: UsersQueryRepo,
+  ) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
@@ -21,17 +29,31 @@ export class UsersController {
   }
 
   @Get()
-  findAll(): Promise<User[]> {
-    return this.usersService.findAll();
+  async findAll(@Query() sortData: QueryInputUserDto) {
+    return await this.usersService.findAll(sortData);
   }
 
   @Get(":id")
-  findOne(@Param("id", ParseIntPipe) id: number): Promise<User> {
-    return this.usersService.findOne(id);
+  async findOne(@Param("id", ParseIntPipe) id: number) {
+    if (isNaN(+id)) {
+      throw new BadRequestException("Invalid ID format");
+    }
+    const user = await this.usersQueryRepo.findOne(+id);
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return this.usersQueryRepo.findOne(+id);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string): Promise<void> {
-    return this.usersService.remove(id);
+  async remove(@Param("id") id: string) {
+    if (isNaN(+id)) {
+      throw new BadRequestException("Invalid ID format");
+    }
+    const deletedUser = await this.usersService.remove(+id);
+    if (!deletedUser) {
+      throw new NotFoundException();
+    }
+    return deletedUser;
   }
 }

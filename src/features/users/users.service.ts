@@ -1,19 +1,26 @@
-import { Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { User } from "./user.entity";
 import { PasswordService } from "../../applications/password.service";
+import { UsersCommandRepo } from "./repositories/users.commandRepo";
+import { UsersQueryRepo } from "./repositories/users.queryRepo";
+import { QueryInputUserDto } from "./dto/query-input-blog.dto";
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
     private readonly passwordService: PasswordService,
+    private readonly usersCommandRepo: UsersCommandRepo,
+    private readonly usersQueryRepo: UsersQueryRepo,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto) {
     const user = new User();
     user.login = createUserDto.login;
     user.email = createUserDto.email;
@@ -22,18 +29,14 @@ export class UsersService {
     user.createdAt = new Date();
     user.isConfirmed = false;
 
-    return this.usersRepository.save(user);
+    return this.usersCommandRepo.create(user);
   }
 
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+  async findAll(sortData: QueryInputUserDto) {
+    return await this.usersQueryRepo.find(sortData);
   }
 
-  findOne(id: number): Promise<User> {
-    return this.usersRepository.findOneBy({ id: id });
-  }
-
-  async remove(id: string): Promise<void> {
-    await this.usersRepository.delete(id);
+  async remove(id: number) {
+    return await this.usersCommandRepo.delete(id);
   }
 }
