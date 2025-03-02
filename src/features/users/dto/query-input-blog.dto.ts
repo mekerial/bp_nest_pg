@@ -2,7 +2,7 @@ export type QueryInputUserDto = {
   pageNumber?: number;
   pageSize?: number;
   sortBy?: string;
-  sortDirection?: "ASC" | "DESC";
+  sortDirection?: string;
   searchLoginTerm?: string;
   searchEmailTerm?: string;
 };

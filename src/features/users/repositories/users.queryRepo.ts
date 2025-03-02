@@ -2,6 +2,7 @@ import { User } from "../user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { QueryInputUserDto } from "../dto/query-input-blog.dto";
+import { SortByFields } from "../../../common/query-types";
 
 export class UsersQueryRepo {
   constructor(
@@ -9,48 +10,57 @@ export class UsersQueryRepo {
     private readonly usersRepository: Repository<User>,
   ) {}
   async find(sortData: QueryInputUserDto) {
-    const sortBy = sortData.sortBy ?? "createdAt";
-    const sortDirection = sortData.sortDirection ?? "DESC";
+    const sortBy: SortByFields = Object.values(SortByFields).includes(
+      sortData.sortBy as SortByFields,
+    )
+      ? (sortData.sortBy as SortByFields)
+      : SortByFields.CREATED_AT;
+
+    const sortDirection =
+      typeof sortData.sortDirection === "string" &&
+      ["ASC", "DESC"].includes(sortData.sortDirection.toUpperCase())
+        ? (sortData.sortDirection.toUpperCase() as "ASC" | "DESC")
+        : "DESC"; // Меняем ASC на DESC
+
     const pageNumber = sortData.pageNumber ?? 1;
     const pageSize = sortData.pageSize ?? 10;
-    const searchLoginTerm = sortData.searchLoginTerm ?? null;
-    const searchEmailTerm = sortData.searchEmailTerm ?? null;
+    const searchLoginTerm = sortData.searchLoginTerm?.trim() || null;
+    const searchEmailTerm = sortData.searchEmailTerm?.trim() || null;
 
-    let usersViewModel;
+    const query = this.usersRepository.createQueryBuilder("u");
 
-    if (searchLoginTerm) {
-      usersViewModel = await this.usersRepository
-        .createQueryBuilder("u")
-        .where("u.login like :searchLoginTerm", {
-          searchLoginTerm: `%${searchLoginTerm}%`,
-        })
-        .orderBy(`u.${sortBy}`, sortDirection)
-        .skip((pageNumber - 1) * pageSize)
-        .take(pageSize)
-        .getMany();
-    } else if (searchEmailTerm) {
-      usersViewModel = await this.usersRepository
-        .createQueryBuilder("u")
-        .where("u.email like :searchEmailTerm", {
-          searchEmailTerm: `%${searchEmailTerm}%`,
-        })
-        .orderBy(`u.${sortBy}`, sortDirection)
-        .skip((pageNumber - 1) * pageSize)
-        .take(pageSize)
-        .getMany();
-    } else {
-      usersViewModel = await this.usersRepository.find();
+    if (searchLoginTerm || searchEmailTerm) {
+      query.where(
+        "(LOWER(u.login) LIKE LOWER(:searchLoginTerm) OR LOWER(u.email) LIKE LOWER(:searchEmailTerm))",
+        {
+          searchLoginTerm: searchLoginTerm ? `%${searchLoginTerm}%` : "%%",
+          searchEmailTerm: searchEmailTerm ? `%${searchEmailTerm}%` : "%%",
+        },
+      );
     }
 
-    const pagesCount = Math.ceil(usersViewModel.length / pageSize);
-    const totalCount = usersViewModel.length;
+    const sortField =
+      sortBy === SortByFields.CREATED_AT
+        ? `u.${sortBy}`
+        : `u.${sortBy} COLLATE "C"`; // Указание COLLATE для предсказуемой сортировки
+
+    const [usersViewModel, totalCount] = await query
+      .orderBy(sortField, sortDirection)
+      .skip((pageNumber - 1) * pageSize)
+      .take(pageSize)
+      .getManyAndCount();
 
     return {
       page: +pageNumber,
       pageSize: +pageSize,
-      pagesCount,
-      totalCount,
-      items: usersViewModel,
+      pagesCount: Math.ceil(totalCount / pageSize),
+      totalCount: totalCount ?? 0,
+      items: usersViewModel.map((u) => ({
+        id: u.id.toString(),
+        login: u.login,
+        email: u.email,
+        createdAt: u.createdAt,
+      })),
     };
   }
 

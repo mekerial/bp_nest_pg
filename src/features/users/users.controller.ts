@@ -9,13 +9,19 @@ import {
   Query,
   BadRequestException,
   NotFoundException,
+  UseFilters,
+  UseGuards,
+  HttpCode,
 } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
-import { User } from "./user.entity";
 import { UsersService } from "./users.service";
 import { QueryInputUserDto } from "./dto/query-input-blog.dto";
 import { UsersQueryRepo } from "./repositories/users.queryRepo";
+import { HttpExceptionFilter } from "../../infrastructure/exception-filters/http-exception-filter";
+import { BasicAuthGuard } from "../../infrastructure/guards/basic-auth.guard";
 
+@UseGuards(BasicAuthGuard)
+@UseFilters(HttpExceptionFilter)
 @Controller("sa/users")
 export class UsersController {
   constructor(
@@ -30,7 +36,7 @@ export class UsersController {
 
   @Get()
   async findAll(@Query() sortData: QueryInputUserDto) {
-    return await this.usersService.findAll(sortData);
+    return await this.usersQueryRepo.find(sortData);
   }
 
   @Get(":id")
@@ -44,7 +50,7 @@ export class UsersController {
     }
     return this.usersQueryRepo.findOne(+id);
   }
-
+  @HttpCode(204)
   @Delete(":id")
   async remove(@Param("id") id: string) {
     if (isNaN(+id)) {

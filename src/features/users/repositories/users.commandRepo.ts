@@ -8,7 +8,16 @@ export class UsersCommandRepo {
     private readonly usersRepository: Repository<User>,
   ) {}
   async create(user: User) {
-    return await this.usersRepository.save(user);
+    const createdUser = await this.usersRepository.save(user);
+    if (!createdUser) {
+      return null;
+    }
+    return {
+      id: user.id.toString(),
+      login: user.login,
+      email: user.email,
+      createdAt: user.createdAt,
+    };
   }
   async delete(id: number) {
     return await this.usersRepository.delete(id);
