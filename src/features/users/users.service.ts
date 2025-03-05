@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
 import { User } from "./user.entity";
 import { PasswordService } from "../../applications/password.service";
 import { UsersCommandRepo } from "./repositories/users.commandRepo";
 import { UsersQueryRepo } from "./repositories/users.queryRepo";
+import { CreateUserDbType } from "./types/create-user.DbType";
 
 @Injectable()
 export class UsersService {
@@ -13,13 +13,16 @@ export class UsersService {
     private readonly usersQueryRepo: UsersQueryRepo,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDbType) {
     const user = new User();
+
     user.login = createUserDto.login;
     user.email = createUserDto.email;
     user.passwordHash = createUserDto.password;
     user.passwordSalt = await this.passwordService.generateSalt(10);
     user.createdAt = new Date();
+    user.confirmationCode = createUserDto.confirmationCode || "no code";
+    user.codeExpirationDate = createUserDto.codeExpirationDate || null;
     user.isConfirmed = false;
 
     return await this.usersCommandRepo.create(user);

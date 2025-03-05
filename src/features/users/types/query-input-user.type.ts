@@ -1,4 +1,4 @@
-export type QueryInputUserDto = {
+export type QueryInputUserType = {
   pageNumber?: number;
   pageSize?: number;
   sortBy?: string;

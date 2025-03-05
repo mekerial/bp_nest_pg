@@ -20,6 +20,12 @@ export class User {
   @Column()
   passwordSalt: string;
 
+  @Column()
+  confirmationCode: string;
+
+  @Column()
+  codeExpirationDate: Date;
+
   @Column({ default: false })
   isConfirmed: boolean;
 }

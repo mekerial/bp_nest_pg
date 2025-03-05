@@ -1,7 +1,7 @@
 import { User } from "../user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { QueryInputUserDto } from "../dto/query-input-blog.dto";
+import { QueryInputUserType } from "../types/query-input-user.type";
 import { SortByFields } from "../../../common/query-types";
 
 export class UsersQueryRepo {
@@ -9,7 +9,7 @@ export class UsersQueryRepo {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
   ) {}
-  async find(sortData: QueryInputUserDto) {
+  async find(sortData: QueryInputUserType) {
     const sortBy: SortByFields = Object.values(SortByFields).includes(
       sortData.sortBy as SortByFields,
     )

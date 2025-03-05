@@ -1,18 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { CreateUserInputType } from "./types/create-user-input.type";
+import { UsersController } from "./users.controller";
+import { UsersService } from "./users.service";
+import { UsersQueryRepo } from "./repositories/users.queryRepo";
 
-const createUserDto: CreateUserDto = {
-    login: 'login #1',
-    password: 'password #1',
-    email: 'email #1',
-  };
+const createUserDto: CreateUserInputType = {
+  login: "login #1",
+  password: "password #1",
+  email: "email #1",
+};
 
-
-describe('UsersController', () => {
+describe("UsersController", () => {
   let usersController: UsersController;
   let usersService: UsersService;
+  let usersQueryRepo: UsersQueryRepo;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -24,23 +25,23 @@ describe('UsersController', () => {
           useValue: {
             create: jest
               .fn()
-              .mockImplementation((user: CreateUserDto) =>
-                Promise.resolve({ id: '1', ...user }),
+              .mockImplementation((user: CreateUserInputType) =>
+                Promise.resolve({ id: "1", ...user }),
               ),
             findAll: jest.fn().mockResolvedValue([
               {
-                firstName: 'firstName #1',
-                lastName: 'lastName #1',
+                firstName: "firstName #1",
+                lastName: "lastName #1",
               },
               {
-                firstName: 'firstName #2',
-                lastName: 'lastName #2',
+                firstName: "firstName #2",
+                lastName: "lastName #2",
               },
             ]),
             findOne: jest.fn().mockImplementation((id: string) =>
               Promise.resolve({
-                firstName: 'firstName #1',
-                lastName: 'lastName #1',
+                firstName: "firstName #1",
+                lastName: "lastName #1",
                 id,
               }),
             ),
@@ -54,42 +55,42 @@ describe('UsersController', () => {
     usersService = app.get<UsersService>(UsersService);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(usersController).toBeDefined();
   });
 
-  describe('create()', () => {
-    it('should create a user', () => {
+  describe("create()", () => {
+    it("should create a user", () => {
       usersController.create(createUserDto);
       expect(usersController.create(createUserDto)).resolves.toEqual({
-        id: '1',
+        id: "1",
         ...createUserDto,
       });
       expect(usersService.create).toHaveBeenCalledWith(createUserDto);
     });
   });
 
-  describe('findAll()', () => {
-    it('should find all users ', () => {
-      usersController.findAll();
-      expect(usersService.findAll).toHaveBeenCalled();
+  describe("findAll()", () => {
+    it("should find all users ", () => {
+      usersController.findAll({});
+      expect(usersQueryRepo.find({})).toHaveBeenCalled();
     });
   });
 
-  describe('findOne()', () => {
-    it('should find a user', () => {
+  describe("findOne()", () => {
+    it("should find a user", () => {
       expect(usersController.findOne(1)).resolves.toEqual({
-        firstName: 'firstName #1',
-        lastName: 'lastName #1',
+        firstName: "firstName #1",
+        lastName: "lastName #1",
         id: 1,
       });
-      expect(usersService.findOne).toHaveBeenCalled();
+      expect(usersQueryRepo.findOne).toHaveBeenCalled();
     });
   });
 
-  describe('remove()', () => {
-    it('should remove the user', () => {
-      usersController.remove('2');
+  describe("remove()", () => {
+    it("should remove the user", () => {
+      usersController.remove("2");
       expect(usersService.remove).toHaveBeenCalled();
     });
   });

@@ -13,9 +13,9 @@ import {
   UseGuards,
   HttpCode,
 } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
+import { CreateUserInputType } from "./types/create-user-input.type";
 import { UsersService } from "./users.service";
-import { QueryInputUserDto } from "./dto/query-input-blog.dto";
+import { QueryInputUserType } from "./types/query-input-user.type";
 import { UsersQueryRepo } from "./repositories/users.queryRepo";
 import { HttpExceptionFilter } from "../../infrastructure/exception-filters/http-exception-filter";
 import { BasicAuthGuard } from "../../infrastructure/guards/basic-auth.guard";
@@ -30,12 +30,12 @@ export class UsersController {
   ) {}
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
+  async create(@Body() createUserDto: CreateUserInputType) {
     return await this.usersService.create(createUserDto);
   }
 
   @Get()
-  async findAll(@Query() sortData: QueryInputUserDto) {
+  async findAll(@Query() sortData: QueryInputUserType) {
     return await this.usersQueryRepo.find(sortData);
   }
 
