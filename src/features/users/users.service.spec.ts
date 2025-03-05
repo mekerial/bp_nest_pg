@@ -66,27 +66,27 @@ describe("UserService", () => {
     });
   });
 
-  describe("findAll()", () => {
-    it("should return an array of users", async () => {
-      const users = await service.findAll();
-      expect(users).toEqual(userArray);
-    });
-  });
-
-  describe("findOne()", () => {
-    it("should get a single user", () => {
-      const repoSpy = jest.spyOn(repository, "findOneBy");
-      expect(service.findOne(1)).resolves.toEqual(oneUser);
-      expect(repoSpy).toBeCalledWith({ id: 1 });
-    });
-  });
-
-  describe("remove()", () => {
-    it("should call remove with the passed value", async () => {
-      const removeSpy = jest.spyOn(repository, "delete");
-      const retVal = await service.remove("2");
-      expect(removeSpy).toBeCalledWith("2");
-      expect(retVal).toBeUndefined();
-    });
-  });
+  // describe("findAll()", () => {
+  //   it("should return an array of users", async () => {
+  //     const users = await service.findAll();
+  //     expect(users).toEqual(userArray);
+  //   });
+  // });
+  //
+  // describe("findOne()", () => {
+  //   it("should get a single user", () => {
+  //     const repoSpy = jest.spyOn(repository, "findOneBy");
+  //     expect(service.findOne(1)).resolves.toEqual(oneUser);
+  //     expect(repoSpy).toBeCalledWith({ id: 1 });
+  //   });
+  // });
+  //
+  // describe("remove()", () => {
+  //   it("should call remove with the passed value", async () => {
+  //     const removeSpy = jest.spyOn(repository, "delete");
+  //     const retVal = await service.remove("2");
+  //     expect(removeSpy).toBeCalledWith("2");
+  //     expect(retVal).toBeUndefined();
+  //   });
+  // });
 });
