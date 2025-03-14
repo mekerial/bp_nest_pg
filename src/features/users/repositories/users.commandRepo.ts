@@ -22,4 +22,15 @@ export class UsersCommandRepo {
   async delete(id: number) {
     return await this.usersRepository.delete(id);
   }
+
+  async updateConfirmationCode(
+    id: number,
+    confirmationCode: string,
+    codeExpirationDate: Date,
+  ) {
+    return await this.usersRepository.update(id, {
+      confirmationCode: confirmationCode,
+      codeExpirationDate: codeExpirationDate,
+    });
+  }
 }

@@ -2,6 +2,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Blog } from "../entities/blog.entity";
 import { Repository } from "typeorm";
 import { QueryInputBlogDto } from "../dto/query-input-blog.dto";
+import { NotFoundException } from "@nestjs/common";
 
 export class BlogsQueryRepo {
   constructor(
@@ -43,6 +44,10 @@ export class BlogsQueryRepo {
     };
   }
   async findOne(id: number): Promise<Blog> {
-    return this.blogsQueryRepo.findOneBy({ id });
+    const blog = await this.blogsQueryRepo.findOneBy({ id });
+    if (!blog) {
+      throw new NotFoundException();
+    }
+    return blog;
   }
 }

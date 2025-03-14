@@ -7,6 +7,9 @@ import { UsersCommandRepo } from "../features/users/repositories/users.commandRe
 import { UsersQueryRepo } from "../features/users/repositories/users.queryRepo";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "../features/users/user.entity";
+import { JwtService } from "../applications/jwt.service";
+import { NameIsExistConstraint } from "../infrastructure/decorators/validators/name-is-exist.decorator";
+import { EmailIsExistConstraint } from "../infrastructure/decorators/validators/email-is-exist.decorator";
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
@@ -17,6 +20,9 @@ import { User } from "../features/users/user.entity";
     UsersCommandRepo,
     UsersQueryRepo,
     PasswordService,
+    JwtService,
+    NameIsExistConstraint,
+    EmailIsExistConstraint,
   ],
 })
 export class AuthModule {}

@@ -29,8 +29,7 @@ export class BlogsController {
 
   @Post()
   async create(@Body() createBlogDto: CreateBlogDto) {
-    const createBlog = await this.blogsService.create(createBlogDto);
-    return createBlog;
+    return await this.blogsService.create(createBlogDto);
   }
 
   @Get()
@@ -43,11 +42,7 @@ export class BlogsController {
     if (isNaN(+id)) {
       throw new BadRequestException("Invalid ID format");
     }
-    const blog = await this.blogsQueryRepo.findOne(+id);
-    if (!blog) {
-      throw new NotFoundException();
-    }
-    return blog;
+    return await this.blogsQueryRepo.findOne(+id);
   }
 
   @Put(":id")
@@ -55,11 +50,7 @@ export class BlogsController {
     if (isNaN(+id)) {
       throw new BadRequestException("Invalid ID format");
     }
-    const updatedBlog = await this.blogsService.update(+id, updateBlogDto);
-    if (updatedBlog) {
-      throw new NotFoundException();
-    }
-    return updatedBlog;
+    return await this.blogsService.update(+id, updateBlogDto);
   }
 
   @Delete(":id")

@@ -76,4 +76,31 @@ export class UsersQueryRepo {
       createdAt: user.createdAt,
     };
   }
+
+  async findOneByLoginOrEmail(loginOrEmail: string) {
+    const user = await this.usersRepository
+      .createQueryBuilder("user")
+      .where("user.login = :loginOrEmail OR user.email = :loginOrEmail", {
+        loginOrEmail,
+      })
+      .getOne();
+
+    return user || null;
+  }
+
+  async emailIsExist(email: string) {
+    const user = await this.usersRepository.findOneBy({ email: email });
+    if (!user) {
+      return false;
+    }
+    return true;
+  }
+
+  async nameIsExist(login: string) {
+    const user = await this.usersRepository.findOneBy({ login: login });
+    if (!user) {
+      return false;
+    }
+    return true;
+  }
 }

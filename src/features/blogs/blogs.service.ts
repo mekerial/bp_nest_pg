@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { CreateBlogDto } from "./dto/create-blog.dto";
 import { UpdateBlogDto } from "./dto/update-blog.dto";
 import { BlogsCommandRepo } from "./repositories/blogs.commandRepo";
@@ -27,7 +27,7 @@ export class BlogsService {
   async update(id: number, updateBlogDto: UpdateBlogDto) {
     const blog = await this.blogsQueryRepo.findOne(id);
     if (!blog) {
-      return null;
+      throw new NotFoundException();
     }
 
     const updatedBlog = {

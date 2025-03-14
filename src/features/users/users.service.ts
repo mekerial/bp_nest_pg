@@ -4,6 +4,7 @@ import { PasswordService } from "../../applications/password.service";
 import { UsersCommandRepo } from "./repositories/users.commandRepo";
 import { UsersQueryRepo } from "./repositories/users.queryRepo";
 import { CreateUserDbType } from "./types/create-user.DbType";
+import { LoginInputModel } from "../../auth/types/user-types";
 
 @Injectable()
 export class UsersService {
@@ -16,13 +17,20 @@ export class UsersService {
   async create(createUserDto: CreateUserDbType) {
     const user = new User();
 
+    const generatedSalt = await this.passwordService.generateSalt(10);
+    const passwordHash = await this.passwordService.generateHash(
+      createUserDto.password,
+      generatedSalt,
+    );
+    user.passwordHash = passwordHash;
+
     user.login = createUserDto.login;
     user.email = createUserDto.email;
-    user.passwordHash = createUserDto.password;
-    user.passwordSalt = await this.passwordService.generateSalt(10);
+    user.passwordHash = passwordHash;
+    user.passwordSalt = generatedSalt;
     user.createdAt = new Date();
     user.confirmationCode = createUserDto.confirmationCode || "no code";
-    user.codeExpirationDate = createUserDto.codeExpirationDate || null;
+    user.codeExpirationDate = createUserDto.codeExpirationDate || new Date();
     user.isConfirmed = false;
 
     return await this.usersCommandRepo.create(user);
@@ -34,5 +42,35 @@ export class UsersService {
       return;
     }
     return await this.usersCommandRepo.delete(id);
+  }
+
+  async checkCredentials(loginData: LoginInputModel) {
+    const user = await this.usersQueryRepo.findOneByLoginOrEmail(
+      loginData.loginOrEmail,
+    );
+    if (!user) {
+      return null;
+    }
+    const passwordHash = await this.passwordService.generateHash(
+      loginData.password,
+      user.passwordSalt,
+    );
+    console.log(user.passwordHash, passwordHash);
+    if (user.passwordHash !== passwordHash) {
+      return null;
+    }
+    return user;
+  }
+
+  async updateConfirmationCode(
+    id: number,
+    confirmationCode: string,
+    codeExpirationDate: Date,
+  ) {
+    return await this.usersCommandRepo.updateConfirmationCode(
+      id,
+      confirmationCode,
+      codeExpirationDate,
+    );
   }
 }

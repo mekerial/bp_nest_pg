@@ -1,13 +1,19 @@
 import { Injectable } from "@nestjs/common";
-import { CreateUserInputModelType } from "./dto/user-types";
+import { CreateUserInputModelType, LoginInputModel } from "./types/user-types";
 import { UsersService } from "../features/users/users.service";
 import { add } from "date-fns/add";
 import { v4 as uuidv4 } from "uuid";
 import { emailAdapter } from "../applications/email/email.adapter";
+import { JwtService } from "../applications/jwt.service";
+import { UsersQueryRepo } from "../features/users/repositories/users.queryRepo";
 
 @Injectable()
 export class AuthService {
-  constructor(protected usersService: UsersService) {}
+  constructor(
+    protected usersService: UsersService,
+    protected jwtService: JwtService,
+    protected usersQueryRepo: UsersQueryRepo,
+  ) {}
 
   async registrateUser(inputModel: CreateUserInputModelType) {
     const confirmationCode = uuidv4();
@@ -30,6 +36,57 @@ export class AuthService {
     }
     emailAdapter.sendConfirmToEmail(userData.email, confirmationCode);
 
+    return true;
+  }
+
+  async loginUser(
+    inputModel: LoginInputModel,
+    deviceTitle: string,
+    ip: string,
+  ) {
+    const auth = await this.usersService.checkCredentials(inputModel);
+    if (!auth) {
+      return false;
+    }
+
+    const accessToken = await this.jwtService.createAccessJWT(auth.id);
+    const deviceId = uuidv4();
+    // const refreshToken = await this.jwtService.createRefreshJWT(
+    //   auth.id,
+    //   deviceId,
+    // );
+    const userId = auth.id;
+
+    // await this.securityService.createSession(
+    //   ip,
+    //   deviceTitle,
+    //   deviceId,
+    //   userId,
+    //   refreshToken,
+    // );
+
+    return {
+      // refreshToken: refreshToken,
+      deviceId: deviceId,
+      accessToken: accessToken,
+    };
+  }
+
+  async registrationEmailResending(email: string) {
+    const user = await this.usersQueryRepo.findOneByLoginOrEmail(email);
+    if (!user) {
+      return false;
+    }
+    const confirmationCode = uuidv4();
+    const codeExpirationDate = add(new Date(), {
+      minutes: 15,
+    });
+    await this.usersService.updateConfirmationCode(
+      user.id,
+      confirmationCode,
+      codeExpirationDate,
+    );
+    emailAdapter.sendConfirmToEmail(user.email, confirmationCode);
     return true;
   }
 }
