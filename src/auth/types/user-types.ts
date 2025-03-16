@@ -25,7 +25,7 @@ export class CreateUserInputModelType {
 export class ResendEmailInputModel {
   @IsString()
   @Trim()
-  @EmailIsExist()
+  // @EmailIsExist()
   email: string;
 }
 

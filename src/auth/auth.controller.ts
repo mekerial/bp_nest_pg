@@ -6,6 +6,7 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  BadRequestException,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import {
@@ -64,11 +65,11 @@ export class AuthController {
     @Body() emailInputModel: ResendEmailInputModel,
   ) {
     console.log("/auth/registration-email-resending");
-    const regUser = await this.authService.registrationEmailResending(
+    const resendEmail = await this.authService.registrationEmailResending(
       emailInputModel.email,
     );
-    if (!regUser) {
-      throw new Error();
+    if (!resendEmail) {
+      throw new BadRequestException();
     }
     return;
   }
