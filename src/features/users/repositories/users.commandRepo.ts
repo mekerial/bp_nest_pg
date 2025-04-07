@@ -5,7 +5,7 @@ import { Repository } from "typeorm";
 export class UsersCommandRepo {
   constructor(
     @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
+    protected usersRepository: Repository<User>,
   ) {}
   async create(user: User) {
     const createdUser = await this.usersRepository.save(user);

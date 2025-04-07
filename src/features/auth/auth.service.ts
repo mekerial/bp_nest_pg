@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import { emailAdapter } from "../../applications/email/email.adapter";
 import { JwtService } from "../../applications/jwt.service";
 import { UsersQueryRepo } from "../users/repositories/users.queryRepo";
+import { SecurityService } from "../security/security.service";
 
 @Injectable()
 export class AuthService {
@@ -13,6 +14,7 @@ export class AuthService {
     protected usersService: UsersService,
     protected jwtService: JwtService,
     protected usersQueryRepo: UsersQueryRepo,
+    protected securityService: SecurityService,
   ) {}
 
   async registrateUser(inputModel: CreateUserInputModelType) {
@@ -51,22 +53,22 @@ export class AuthService {
 
     const accessToken = await this.jwtService.createAccessJWT(auth.id);
     const deviceId = uuidv4();
-    // const refreshToken = await this.jwtService.createRefreshJWT(
-    //   auth.id,
-    //   deviceId,
-    // );
+    const refreshToken = await this.jwtService.createRefreshJWT(
+      auth.id,
+      deviceId,
+    );
     const userId = auth.id;
 
-    // await this.securityService.createSession(
-    //   ip,
-    //   deviceTitle,
-    //   deviceId,
-    //   userId,
-    //   refreshToken,
-    // );
+    await this.securityService.createSession(
+      ip,
+      deviceTitle,
+      deviceId,
+      userId,
+      refreshToken,
+    );
 
     return {
-      // refreshToken: refreshToken,
+      refreshToken: refreshToken,
       deviceId: deviceId,
       accessToken: accessToken,
     };
@@ -75,7 +77,18 @@ export class AuthService {
   async registrationEmailResending(email: string) {
     const user = await this.usersQueryRepo.findOneByLoginOrEmail(email);
     if (!user) {
-      return false;
+      return {
+        false: false,
+        info: "User not found",
+        field: "email",
+      };
+    }
+    if (user.isConfirmed) {
+      return {
+        flag: false,
+        info: "Email already confirmed",
+        field: "email",
+      };
     }
     const confirmationCode = uuidv4();
     const codeExpirationDate = add(new Date(), {
@@ -87,13 +100,20 @@ export class AuthService {
       codeExpirationDate,
     );
     emailAdapter.sendConfirmToEmail(email, confirmationCode);
-    return true;
+    return {
+      flag: true,
+      info: "Check your email",
+      field: "email",
+    };
   }
 
   async registrationConfirmation(confirmationCode: string) {
     const user =
       await this.usersQueryRepo.findOneByConfirmationCode(confirmationCode);
     if (!user) {
+      return false;
+    }
+    if (user.isConfirmed) {
       return false;
     }
     await this.usersService.confirmUser(user.id);

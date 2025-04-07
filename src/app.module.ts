@@ -5,6 +5,7 @@ import { BlogsModule } from "./features/blogs/blogs.module";
 import { PostsModule } from "./features/posts/posts.module";
 import { UtilsModule } from "./features/utils/utils.module";
 import { AuthModule } from "./features/auth/auth.module";
+import { SecurityModule } from "./features/security/security.module";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AuthModule } from "./features/auth/auth.module";
     PostsModule,
     UtilsModule,
     AuthModule,
+    SecurityModule,
   ],
 })
 export class AppModule {}

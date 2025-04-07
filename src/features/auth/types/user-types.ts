@@ -39,3 +39,7 @@ export type LoginInputModel = {
   loginOrEmail: string;
   password: string;
 };
+
+export type ConfirmationCodeInputModel = {
+  code: string;
+};
