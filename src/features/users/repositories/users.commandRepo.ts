@@ -33,4 +33,10 @@ export class UsersCommandRepo {
       codeExpirationDate: codeExpirationDate,
     });
   }
+
+  async confirmUser(id: number) {
+    return await this.usersRepository.update(id, {
+      isConfirmed: true,
+    });
+  }
 }

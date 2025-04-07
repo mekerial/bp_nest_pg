@@ -1,8 +1,8 @@
-import { Trim } from "../../infrastructure/decorators/transform/trim";
+import { Trim } from "../../../infrastructure/decorators/transform/trim";
 import { IsString, Length } from "class-validator";
-import { IsOptionalEmail } from "../../infrastructure/decorators/validators/isOptionalEmail";
-import { EmailIsExist } from "../../infrastructure/decorators/validators/email-is-exist.decorator";
-import { NameIsExist } from "../../infrastructure/decorators/validators/name-is-exist.decorator";
+import { IsOptionalEmail } from "../../../infrastructure/decorators/validators/isOptionalEmail";
+import { EmailIsExist } from "../../../infrastructure/decorators/validators/email-is-exist.decorator";
+import { NameIsExist } from "../../../infrastructure/decorators/validators/name-is-exist.decorator";
 
 export class CreateUserInputModelType {
   @Trim()

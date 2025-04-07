@@ -1,11 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { CreateUserInputModelType, LoginInputModel } from "./types/user-types";
-import { UsersService } from "../features/users/users.service";
+import { UsersService } from "../users/users.service";
 import { add } from "date-fns/add";
 import { v4 as uuidv4 } from "uuid";
-import { emailAdapter } from "../applications/email/email.adapter";
-import { JwtService } from "../applications/jwt.service";
-import { UsersQueryRepo } from "../features/users/repositories/users.queryRepo";
+import { emailAdapter } from "../../applications/email/email.adapter";
+import { JwtService } from "../../applications/jwt.service";
+import { UsersQueryRepo } from "../users/repositories/users.queryRepo";
 
 @Injectable()
 export class AuthService {
@@ -86,7 +86,17 @@ export class AuthService {
       confirmationCode,
       codeExpirationDate,
     );
-    emailAdapter.sendConfirmToEmail(user.email, confirmationCode);
+    emailAdapter.sendConfirmToEmail(email, confirmationCode);
+    return true;
+  }
+
+  async registrationConfirmation(confirmationCode: string) {
+    const user =
+      await this.usersQueryRepo.findOneByConfirmationCode(confirmationCode);
+    if (!user) {
+      return false;
+    }
+    await this.usersService.confirmUser(user.id);
     return true;
   }
 }

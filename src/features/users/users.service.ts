@@ -4,7 +4,7 @@ import { PasswordService } from "../../applications/password.service";
 import { UsersCommandRepo } from "./repositories/users.commandRepo";
 import { UsersQueryRepo } from "./repositories/users.queryRepo";
 import { CreateUserDbType } from "./types/create-user.DbType";
-import { LoginInputModel } from "../../auth/types/user-types";
+import { LoginInputModel } from "../auth/types/user-types";
 
 @Injectable()
 export class UsersService {
@@ -72,5 +72,9 @@ export class UsersService {
       confirmationCode,
       codeExpirationDate,
     );
+  }
+
+  async confirmUser(id: number) {
+    return await this.usersCommandRepo.confirmUser(id);
   }
 }

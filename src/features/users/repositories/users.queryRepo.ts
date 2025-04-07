@@ -88,6 +88,16 @@ export class UsersQueryRepo {
     return user || null;
   }
 
+  async findOneByConfirmationCode(confirmationCode: string) {
+    const user = await this.usersRepository
+      .createQueryBuilder("user")
+      .where("user.confirmationCode = :confirmationCode", {
+        confirmationCode,
+      })
+      .getOne();
+    return user || null;
+  }
+
   async emailIsExist(email: string) {
     const user = await this.usersRepository.findOneBy({ email: email });
     if (!user) {

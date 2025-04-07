@@ -4,7 +4,7 @@ import { UsersModule } from "./features/users/users.module";
 import { BlogsModule } from "./features/blogs/blogs.module";
 import { PostsModule } from "./features/posts/posts.module";
 import { UtilsModule } from "./features/utils/utils.module";
-import { AuthModule } from "./auth/auth.module";
+import { AuthModule } from "./features/auth/auth.module";
 
 @Module({
   imports: [

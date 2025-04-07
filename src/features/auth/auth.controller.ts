@@ -73,4 +73,16 @@ export class AuthController {
     }
     return;
   }
+
+  @Post("registration-confirmation")
+  @HttpCode(204)
+  async registrationConfirmation(@Body() confirmationCode: string) {
+    console.log("/auth/registration-confirmation");
+    const confirmation =
+      await this.authService.registrationConfirmation(confirmationCode);
+    if (!confirmation) {
+      throw new BadRequestException();
+    }
+    return;
+  }
 }
