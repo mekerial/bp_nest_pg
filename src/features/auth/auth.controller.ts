@@ -1,13 +1,13 @@
 import {
-  Controller,
-  Post,
+  BadRequestException,
   Body,
+  Controller,
+  Get,
   HttpCode,
+  Post,
   Req,
   Res,
   UnauthorizedException,
-  BadRequestException,
-  Get,
   UseGuards,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
@@ -20,12 +20,16 @@ import {
 import { Request, Response } from "express";
 import { AuthGuard } from "../../infrastructure/guards/auth.guard";
 import { JwtService } from "../../applications/jwt.service";
+import { SecurityService } from "../security/security.service";
+import { UsersService } from "../users/users.service";
 
 @Controller("auth")
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly userService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly securityService: SecurityService,
   ) {}
 
   @Post("login")
@@ -61,7 +65,14 @@ export class AuthController {
   @UseGuards(AuthGuard)
   async getProfile(@Req() request: Request) {
     console.log("/auth/profile");
-    return;
+
+    const user = await this.userService.getUser(+request.userId);
+
+    return {
+      email: user.email,
+      login: user.login,
+      userId: user.id,
+    };
   }
 
   @Post("registration")
@@ -138,6 +149,25 @@ export class AuthController {
     });
 
     return { accessToken: newAccessToken };
+  }
+
+  @Post("logout")
+  @HttpCode(204)
+  async logoutUser(@Req() request: Request) {
+    const refreshToken = request.cookies.refreshToken;
+
+    const revokeRefreshToken =
+      await this.jwtService.revokeRefreshToken(refreshToken);
+
+    if (!revokeRefreshToken) {
+      throw new UnauthorizedException();
+    }
+    const logout =
+      await this.securityService.deleteSessionByRefreshToken(refreshToken);
+
+    if (!logout) {
+      throw new UnauthorizedException();
+    }
     return;
   }
 }

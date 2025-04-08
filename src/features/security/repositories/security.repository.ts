@@ -51,4 +51,16 @@ export class SessionRepository {
     refreshToken: string,
     newRefreshToken: string,
   ) {}
+
+  async deleteSessionByRefreshToken(refreshToken: string) {
+    const session = await this.getSessionByRefreshToken(refreshToken);
+
+    const result = await this.sessionRepository.delete(session.id);
+
+    if (!result) {
+      return null;
+    }
+
+    return true;
+  }
 }

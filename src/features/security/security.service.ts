@@ -21,4 +21,10 @@ export class SecurityService {
     );
     return;
   }
+
+  async deleteSessionByRefreshToken(refreshToken: string) {
+    return await this.sessionRepository.deleteSessionByRefreshToken(
+      refreshToken,
+    );
+  }
 }

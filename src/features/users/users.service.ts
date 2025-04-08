@@ -77,4 +77,8 @@ export class UsersService {
   async confirmUser(id: number) {
     return await this.usersCommandRepo.confirmUser(id);
   }
+
+  async getUser(userId: number) {
+    return await this.usersQueryRepo.findOne(userId);
+  }
 }

@@ -12,7 +12,7 @@ export class JwtService {
     protected refreshTokenRepository: Repository<RefreshToken>,
     protected sessionRepository: SessionRepository,
   ) {}
-  async createAccessJWT(userId: number) {
+  createAccessJWT(userId: number) {
     const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET, {
       expiresIn: "10s",
     });
@@ -25,7 +25,7 @@ export class JwtService {
       refreshToken: jwt.sign(
         { userId: userId, deviceId: deviceId },
         process.env.REFRESH_SECRET,
-        { expiresIn: "20s" },
+        { expiresIn: "21s" },
       ),
     };
     await this.refreshTokenRepository.save(refreshTokenWithId);
@@ -35,7 +35,7 @@ export class JwtService {
   getUserIdByAccessToken(token: string) {
     try {
       const result = jwt.verify(token, process.env.JWT_SECRET);
-      return result["userId"];
+      return +result["userId"];
     } catch {
       return null;
     }
@@ -67,7 +67,7 @@ export class JwtService {
           refreshToken,
           process.env.REFRESH_SECRET,
         );
-        const newAccessToken = await this.createAccessJWT(userId);
+        const newAccessToken = this.createAccessJWT(userId);
         const newRefreshToken = await this.createRefreshJWT(userId, deviceId);
 
         await this.refreshTokenRepository.delete(result[0].id);
@@ -116,6 +116,43 @@ export class JwtService {
         return null;
       }
     } catch {
+      return null;
+    }
+  }
+
+  async revokeRefreshToken(refreshToken: string) {
+    const result = await this.refreshTokenRepository.find({
+      where: { refreshToken: refreshToken },
+    });
+
+    if (!result[0]) {
+      return null;
+    }
+
+    const userId = await this.getUserIdByRefreshToken(refreshToken);
+    if (!userId) {
+      return null;
+    }
+    if (result[0].userId.toString() !== userId.toString()) {
+      return null;
+    }
+
+    if (result) {
+      try {
+        const verifyToken: any = jwt.verify(
+          refreshToken,
+          process.env.REFRESH_SECRET,
+        );
+
+        await this.refreshTokenRepository.delete(result[0].id);
+        console.log("success delete token! logout");
+
+        return verifyToken;
+      } catch {
+        return null;
+      }
+    } else {
+      console.log("else");
       return null;
     }
   }
