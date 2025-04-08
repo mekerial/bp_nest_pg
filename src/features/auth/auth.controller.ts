@@ -64,7 +64,7 @@ export class AuthController {
   @HttpCode(200)
   @UseGuards(AuthGuard)
   async getProfile(@Req() request: Request) {
-    console.log("/auth/profile");
+    console.log("/auth/me");
 
     const user = await this.userService.getUser(+request.userId);
 
@@ -126,17 +126,18 @@ export class AuthController {
   @Post("refresh-token")
   @HttpCode(200)
   @UseGuards(AuthGuard)
-  async refreshToken(
+  async getRefreshToken(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
+    console.log("/auth/refresh-token");
+
     const refreshToken = request.cookies.refreshToken;
     const deviceId = request.cookies.deviceId;
     const updateTokens = await this.jwtService.updateAccessTokenByRefreshToken(
       refreshToken,
       deviceId,
     );
-    console.log("/auth/refresh-token");
 
     if (!updateTokens) {
       throw new UnauthorizedException();
@@ -154,6 +155,7 @@ export class AuthController {
   @Post("logout")
   @HttpCode(204)
   async logoutUser(@Req() request: Request) {
+    console.log("/auth/logout");
     const refreshToken = request.cookies.refreshToken;
 
     const revokeRefreshToken =

@@ -47,10 +47,34 @@ export class SessionRepository {
     issuedAt: Date,
     deviceId: string,
     deviceName: string,
-    userId: string,
+    userId: number,
     refreshToken: string,
     newRefreshToken: string,
-  ) {}
+  ) {
+    console.log("updating session");
+    const lastActiveDate = new Date().toISOString();
+    const sessionId = await this.sessionRepository.find({
+      where: { refreshToken: refreshToken },
+    });
+
+    if (!sessionId[0]) {
+      console.log("not found session");
+      return;
+    }
+
+    console.log("updating session5");
+    const result = await this.sessionRepository.update(refreshToken, {
+      issuedAt,
+      lastActiveDate,
+      deviceId,
+      ip,
+      deviceName,
+      userId,
+      refreshToken: newRefreshToken,
+    });
+    console.log("success update session");
+    return;
+  }
 
   async deleteSessionByRefreshToken(refreshToken: string) {
     const session = await this.getSessionByRefreshToken(refreshToken);

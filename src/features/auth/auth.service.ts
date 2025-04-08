@@ -51,7 +51,7 @@ export class AuthService {
       return false;
     }
 
-    const accessToken = await this.jwtService.createAccessJWT(auth.id);
+    const accessToken = this.jwtService.createAccessJWT(auth.id);
     const deviceId = uuidv4();
     const refreshToken = await this.jwtService.createRefreshJWT(
       auth.id,

@@ -13,10 +13,9 @@ export class JwtService {
     protected sessionRepository: SessionRepository,
   ) {}
   createAccessJWT(userId: number) {
-    const accessToken = jwt.sign({ userId }, process.env.JWT_SECRET, {
+    return jwt.sign({ userId }, process.env.JWT_SECRET, {
       expiresIn: "10s",
     });
-    return accessToken;
   }
 
   async createRefreshJWT(userId: number, deviceId: string) {
@@ -25,7 +24,7 @@ export class JwtService {
       refreshToken: jwt.sign(
         { userId: userId, deviceId: deviceId },
         process.env.REFRESH_SECRET,
-        { expiresIn: "21s" },
+        { expiresIn: "20s" },
       ),
     };
     await this.refreshTokenRepository.save(refreshTokenWithId);
@@ -45,13 +44,13 @@ export class JwtService {
     refreshToken: string,
     deviceId: string,
   ) {
-    const result = await this.refreshTokenRepository.find({
+    const result: RefreshToken[] = await this.refreshTokenRepository.find({
       where: { refreshToken: refreshToken },
     });
     if (!result[0]) {
       return null;
     }
-    const userId = await this.getUserIdByRefreshToken(refreshToken);
+    const userId: number = await this.getUserIdByRefreshToken(refreshToken);
     if (!userId) {
       return null;
     }
@@ -81,7 +80,7 @@ export class JwtService {
           session.issuedAt,
           session.deviceId,
           session.deviceName,
-          session.userId.toString(),
+          session.userId,
           refreshToken,
           newRefreshToken,
         );
@@ -89,7 +88,7 @@ export class JwtService {
         console.log("success update tokens!");
 
         return {
-          userId: verifyToken.userId.toString(),
+          userId: verifyToken.userId,
           accessToken: newAccessToken,
           refreshToken: newRefreshToken,
         };
@@ -137,7 +136,7 @@ export class JwtService {
       return null;
     }
 
-    if (result) {
+    if (result[0]) {
       try {
         const verifyToken: any = jwt.verify(
           refreshToken,

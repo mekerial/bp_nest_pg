@@ -55,7 +55,6 @@ export class UsersService {
       loginData.password,
       user.passwordSalt,
     );
-    console.log(user.passwordHash, passwordHash);
     if (user.passwordHash !== passwordHash) {
       return null;
     }
